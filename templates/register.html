@@ -3,43 +3,158 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Secure Login</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #edf4ff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .register-card {
+            background: white;
+            width: 380px;
+            max-width: 90%;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 50, 120, 0.10);
+        }
+
+        h2 {
+            color: #173b70;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #334155;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: 2px solid #93c5fd;
+            border-color: #2563eb;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .message {
+            background: #fef2f2;
+            color: #b91c1c;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+    </style>
 </head>
+
 <body>
+    <div class="register-card">
 
-    <h2>Create Account</h2>
+        <h2>Create Account</h2>
+        <p class="subtitle">Create your secure account</p>
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                <p style="color: red;">{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-    <form action="/register" method="POST">
-        <label>Name:</label>
-        <input type="text" name="name" required>
+        <form action="/register" method="POST">
 
-        <br><br>
+            <label for="name">Full Name</label>
+            <input type="text"
+                   id="name"
+                   name="name"
+                   placeholder="Enter your full name"
+                   autocomplete="name"
+                   required>
 
-        <label>Email:</label>
-        <input type="email" name="email" required>
+            <label for="email">Email Address</label>
+            <input type="email"
+                   id="email"
+                   name="email"
+                   placeholder="Enter your email"
+                   autocomplete="email"
+                   required>
 
-        <br><br>
+            <label for="password">Password</label>
+            <input type="password"
+                   id="password"
+                   name="password"
+                   placeholder="At least 8 characters"
+                   minlength="8"
+                   autocomplete="new-password"
+                   required>
 
-        <label>Password:</label>
-        <input type="password" name="password" required>
+            <button type="submit">Create Account</button>
 
-        <br><br>
+        </form>
 
-        <button type="submit">Create Account</button>
-    </form>
+        <p class="login-link">
+            Already have an account?
+            <a href="/login">Login here</a>
+        </p>
 
-    <p>
-        Already have an account?
-        <a href="/login">Login here</a>
-    </p>
-
+    </div>
 </body>
 </html>
+
