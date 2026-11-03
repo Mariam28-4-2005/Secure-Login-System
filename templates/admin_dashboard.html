@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Security Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #1e293b;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .high {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .medium {
+            color: #d97706;
+            font-weight: bold;
+        }
+
+        .empty {
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Security Dashboard</h1>
+        <p>Security monitoring and anomaly detection</p>
+
+        <div class="card">
+            <h2>Recent Security Alerts</h2>
+
+            {% if alerts %}
+                {% for alert in alerts %}
+                <div class="card">
+                    <h3>{{ alert.alert_type }}</h3>
+                    <p>{{ alert.description }}</p>
+                    <p>
+                        Severity:
+                        <span class="{{ 'high' if alert.severity == 'HIGH' else 'medium' }}">
+                            {{ alert.severity }}
+                        </span>
+                    </p>
+                    <p>Time: {{ alert.created_at }}</p>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="empty">No security alerts found.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

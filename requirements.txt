@@ -2,3 +2,6 @@ Flask
 mysql-connector-python
 python-dotenv
 scikit-learn
+numpy
+bcrypt
+joblib

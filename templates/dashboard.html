@@ -129,6 +129,24 @@
             &#10004; Login Successful
         </p>
 
+
+        {% if user.is_admin == 1 %}
+        <a href="{{ url_for('admin_security_dashboard') }}"
+            style="
+                    display: block;
+                    text-align: center;
+                    background-color: #2563eb;
+                    color: white;
+                    padding: 14px;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    margin-bottom: 15px;
+            ">
+            AI Security Monitor
+        </a>
+        {% endif %}
+
+
         <a href="/logout" class="logout-btn">
             Logout
         </a>
