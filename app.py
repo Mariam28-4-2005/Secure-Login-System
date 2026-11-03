@@ -12,8 +12,10 @@ from lockout import (
     get_lock_status,
     record_failed_attempt,
     reset_failed_attempts
-) 
+)
 from security import log_security_event
+from ai_integration import monitor_failed_login
+from ai_integration import monitor_registration_salt
 
 # Load environment variables from .env
 load_dotenv(override=True)
@@ -75,13 +77,14 @@ def login():
 
             else:
                 locked = record_failed_attempt(email)
-                
+
                 log_security_event(
                     "LOGIN_FAILED",
                     user_id=user["id"] if user else None,
                     email=email,
                     ip_address=request.remote_addr
                 )
+                monitor_failed_login(request.remote_addr)
                 if locked:
                     log_security_event(
                     "ACCOUNT_LOCKED",
@@ -145,6 +148,14 @@ def register():
                 bcrypt.gensalt()
             ).decode("utf-8")
 
+            # Monitor bcrypt salt before saving the new account
+            salt_result = monitor_registration_salt(password_hash)
+
+            if salt_result is not None:
+                app.logger.info(
+                    "Salt monitoring completed for new registration"
+                )
+
             # Save user in MySQL
             cursor.execute(
                 """
@@ -164,7 +175,7 @@ def register():
              print("REGISTRATION ERROR:", type(e).__name__, flush=True)
              app.logger.exception("Registration failed")
              flash("Registration failed. Please try again.")
- 
+
 
         finally:
             if cursor:
@@ -247,7 +258,7 @@ def verify_otp():
             session.clear()
             session["user_id"] = user_id
             session["otp_verified"] = True
-            
+
             log_security_event(
                 "OTP_SUCCESS",
                 user_id=user_id,
@@ -294,7 +305,7 @@ def dashboard():
         cursor = connection.cursor(dictionary=True)
 
         cursor.execute(
-            "SELECT id, name, email FROM users WHERE id = %s",
+            "SELECT id, name, email, is_admin FROM users WHERE id = %s",
             (user_id,)
         )
 
@@ -334,5 +345,76 @@ def logout():
     flash("You have been logged out successfully.")
     return redirect("/login")
 
+
+# ==========================================
+# ADMIN SECURITY DASHBOARD
+# ==========================================
+
+@app.route("/admin/security")
+def admin_security_dashboard():
+
+    # Check that login and OTP verification are complete
+    if not session.get("otp_verified"):
+        flash("Please complete login verification first.")
+        return redirect("/login")
+
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return redirect("/login")
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # Verify admin permission from MySQL
+        cursor.execute(
+            "SELECT is_admin FROM users WHERE id = %s",
+            (user_id,)
+        )
+
+        user = cursor.fetchone()
+
+        if not user or user["is_admin"] != 1:
+            app.logger.warning(
+                "Unauthorized admin access attempt"
+            )
+            return "Access Denied: Admin Only", 403
+
+        # Read real security alerts
+        cursor.execute(
+            """
+            SELECT id, alert_type, severity,
+                   description, ip_address, created_at
+            FROM security_alerts
+            ORDER BY created_at DESC, id DESC
+            LIMIT 100
+            """
+        )
+
+        alerts = cursor.fetchall()
+
+        return render_template(
+            "admin_dashboard.html",
+            alerts=alerts
+        )
+
+    except Exception:
+        app.logger.exception(
+            "Admin security dashboard failed"
+        )
+        return "Unable to load security dashboard", 500
+
+    finally:
+        if cursor:
+            cursor.close()
+
+        if connection:
+            connection.close()
+
+
 if __name__ == "__main__":
-    app.run(port=5001, debug=True, use_reloader=False)
+    app.run(port=5001, debug=False, use_reloader=False)
